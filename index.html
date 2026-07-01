@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UGEL JAÉN - Registro de Incidencias TI</title>
+    <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <img src="img3.jpg" alt="Logo UGEL Jaén" class="header-logo" onerror="this.style.display='none'; console.log('Coloque la imagen img3.jpg en la misma carpeta.')">
+        <h1>REGISTRO DE INCIDENCIAS DE SOFTWARE Y HARDWARE EN LA UGEL JAÉN</h1>
+        <p>Sede Administrativa - Área de Soporte Tecnológico y Conectividad</p>
+    </header>
+
+    <div class="container">
+        
+        <div id="viewLogin" class="auth-container">
+            <h2>Acceso al Sistema</h2>
+            <form id="formLogin">
+                <div class="form-group">
+                    <label for="loginUser">Usuario Institucional:</label>
+                    <input type="text" id="loginUser" required placeholder="Ingrese usuario">
+                </div>
+                <div class="form-group">
+                    <label for="loginPass">Contraseña:</label>
+                    <input type="password" id="loginPass" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn">Ingresar</button>
+            </form>
+        </div>
+
+        <div id="viewMainApp" class="hidden">
+            
+            <div class="session-bar">
+                <div><span id="lblSessionUser" style="font-weight: bold; color: #003366;"></span></div>
+                <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+            </div>
+
+            <div id="adminTabContainer" class="admin-tabs hidden">
+                <button id="btnTabIncidencias" class="tab-btn active" onclick="switchModuleTab('incidencias')">MÓDULO: GESTIÓN DE INCIDENCIAS</button>
+                <button id="btnTabUsuarios" class="tab-btn" onclick="switchModuleTab('usuarios')">MÓDULO: GESTIÓN DE USUARIOS Y CLAVES</button>
+            </div>
+
+            <div id="moduloUsuarios" class="hidden">
+                <div class="grid grid-split" style="display: grid;">
+                    <div class="card">
+                        <h2>Registrar Nuevo Personal / Usuario</h2>
+                        <form id="formRegister">
+                            <div class="form-group">
+                                <label for="regUser">Nombre de Usuario:</label>
+                                <input type="text" id="regUser" required placeholder="Ej. mramos">
+                            </div>
+                            <div class="form-group">
+                                <label for="regArea">Oficina / Área UGEL:</label>
+                                <input type="text" id="regArea" required placeholder="Ej. AGP, AGI, Contabilidad, Dirección">
+                            </div>
+                            <div class="form-group">
+                                <label for="regPass">Contraseña Inicial:</label>
+                                <input type="password" id="regPass" required placeholder="Asignar contraseña">
+                            </div>
+                            <div class="form-group">
+                                <label for="regRole">Rol asignado:</label>
+                                <select id="regRole" required>
+                                    <option value="usuario">Usuario (Áreas UGEL)</option>
+                                    <option value="soporte">Soporte Técnico / Admin</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-success">Crear Cuenta</button>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <h2>Lista de Personal Registrado y Control de Contraseñas</h2>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Usuario / Oficina</th>
+                                        <th>Rol de Acceso</th>
+                                        <th style="width: 250px; text-align: center;">Acciones de Control</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyUsuarios"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="moduloIncidencias">
+                
+                <div id="sectionDescargasSoporte" class="card hidden">
+                    <h2>Filtros Avanzados y Exportación de Incidencias</h2>
+                    <div style="background: #f1f2f6; padding: 15px; border-radius: 6px;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
+                            <div class="form-group" style="margin:0; flex:1; min-width:140px;">
+                                <label for="filterFechaInicio">Desde (Fecha Registro):</label>
+                                <input type="date" id="filterFechaInicio">
+                            </div>
+                            <div class="form-group" style="margin:0; flex:1; min-width:140px;">
+                                <label for="filterFechaFin">Hasta (Fecha Registro):</label>
+                                <input type="date" id="filterFechaFin">
+                            </div>
+                            <div style="display:flex; gap: 5px;">
+                                <button type="button" class="btn" style="background:#2c3e50;" onclick="aplicarFiltroFechas()">Filtrar Rango</button>
+                                <button type="button" class="btn" style="background:#7f8c8d;" onclick="reestablecerFiltro()">Ver Todo</button>
+                            </div>
+                        </div>
+                        
+                        <div id="lblReportCounter" style="margin-top:12px; font-weight:bold; font-size:12px; color:#003366;"></div>
+                        
+                        <div class="btn-group-download">
+                            <button class="btn btn-success" onclick="descargarExcel()">📥 Descargar Reporte en EXCEL</button>
+                            <button class="btn btn-danger" onclick="descargarPDF()">📄 Imprimir / Descargar en PDF</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-split" id="gridIncidencias">
+                    <div class="card" id="panelFormulario">
+                        <h2>Reportar Incidencia TI</h2>
+                        <form id="formIncidencia">
+                            <div class="form-group">
+                                <label for="txtNombre">Apellidos y Nombres:</label>
+                                <input type="text" id="txtNombre" required placeholder="Persona que reporta">
+                            </div>
+                            <div class="form-group">
+                                <label for="txtArea">Oficina / Área UGEL:</label>
+                                <input type="text" id="txtArea" required placeholder="Ej. AGP, AGI, Contabilidad">
+                            </div>
+                            <div class="form-group">
+                                <label for="selTipo">Prioridad / Tipo:</label>
+                                <select id="selTipo" required>
+                                    <option value="Urgente">Urgente</option>
+                                    <option value="Con tiempo">Con tiempo</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="txtDescripcion">Detalle de la Falla (Hardware/Software):</label>
+                                <textarea id="txtDescripcion" required placeholder="Describa el problema del equipo..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="fileImagenUsuario">Evidencia Fotográfica (Opcional):</label>
+                                <input type="file" id="fileImagenUsuario" accept="image/*">
+                            </div>
+                            <button type="submit" class="btn">Enviar al Área de Informática</button>
+                        </form>
+                    </div>
+
+                    <div class="card" id="panelListado">
+                        <h2>Historial de Incidencias</h2>
+                        <div class="table-container">
+                            <table id="tablaIncidenciasMaestra">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 22%">Usuario / Oficina</th>
+                                        <th style="width: 12%">Prioridad</th>
+                                        <th style="width: 33%">Problema Reportado</th>
+                                        <th style="width: 33%">Acción de Soporte Técnico</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyIncidencias"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer class="main-footer">
+        © 2026 | Oficina de Informática y Sistemas | Todos los derechos reservados<br>
+        <strong>Unidad de Gestión Educativa Local Jaén</strong><br>
+        Calle María Parado de Bellido 406 - Morro Solar - Jaén
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
