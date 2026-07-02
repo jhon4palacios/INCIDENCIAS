@@ -1,7 +1,7 @@
 // Base de Datos en Memoria Local LocalStorage (Incluye llave 'area' por defecto)
 let db_usuarios = JSON.parse(localStorage.getItem('ugel_users')) || [
-    { user: "admin", pass: "Fr4nk/*@", role: "soporte", area: "Sistemas" },
-    { user: "ugeluser", pass: "1234", role: "usuario", area: "Contabilidad" }
+    { user: "admin", pass: "Fr4nk12", role: "soporte", area: "Informatica" },
+    { user: "ugeluser", pass: "1234", role: "usuario", area: "Informatica" }
 ];
 let baseIncidencias = JSON.parse(localStorage.getItem('ugel_incidencias')) || [];
 
