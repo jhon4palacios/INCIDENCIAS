@@ -1,7 +1,6 @@
-// Base de Datos en Memoria Local LocalStorage (Incluye llave 'area' por defecto)
 let db_usuarios = JSON.parse(localStorage.getItem('ugel_users')) || [
-    { user: "admin", pass: "Fr4nk12", role: "soporte", area: "Informatica" },
-    { user: "ugeluser", pass: "1234", role: "usuario", area: "Informatica" }
+    { user: "admin", pass: "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4", role: "soporte", area: "Sistemas" },
+    { user: "ugeluser", pass: "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4", role: "usuario", area: "Contabilidad" }
 ];
 let baseIncidencias = JSON.parse(localStorage.getItem('ugel_incidencias')) || [];
 
@@ -9,12 +8,24 @@ let sessionActive = null;
 let filtroInicio = null;
 let filtroFin = null;
 
-// Control de Formulario de Login
-document.getElementById('formLogin').addEventListener('submit', function(e) {
+// FUNCIÓN AUXILIAR: Genera el Hash SHA-256 de cualquier texto de forma nativa
+async function generarSHA256(texto) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(texto);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Control de Formulario de Login (ASÍNCRONO para esperar el cálculo del Hash)
+document.getElementById('formLogin').addEventListener('submit', async function(e) {
     e.preventDefault();
     const u = document.getElementById('loginUser').value.trim().toLowerCase();
     const p = document.getElementById('loginPass').value;
-    const cuenta = db_usuarios.find(x => x.user === u && x.pass === p);
+    
+    // Convertimos la contraseña ingresada a Hash SHA-256 para compararla
+    const hashIngresado = await generarSHA256(p);
+    const cuenta = db_usuarios.find(x => x.user === u && x.pass === hashIngresado);
 
     if(!cuenta) { 
         alert('Credenciales incorrectas.'); 
@@ -79,8 +90,8 @@ function switchModuleTab(modulo) {
     }
 }
 
-// CREACIÓN DE USUARIOS NUEVOS (Incluye la captura de la Oficina/Área)
-document.getElementById('formRegister').addEventListener('submit', function(e) {
+// CREACIÓN DE USUARIOS NUEVOS (Guarda la contraseña directamente en SHA-256)
+document.getElementById('formRegister').addEventListener('submit', async function(e) {
     e.preventDefault();
     const u = document.getElementById('regUser').value.trim().toLowerCase();
     const a = document.getElementById('regArea').value.trim();
@@ -91,19 +102,27 @@ document.getElementById('formRegister').addEventListener('submit', function(e) {
         alert('El usuario ya existe.'); 
         return; 
     }
-    db_usuarios.push({ user: u, area: a, pass: p, role: r });
+
+    // Convertimos la contraseña en Hash SHA-256 antes de guardarla en el arreglo
+    const hashNuevaClave = await generarSHA256(p);
+
+    db_usuarios.push({ user: u, area: a, pass: hashNuevaClave, role: r });
     localStorage.setItem('ugel_users', JSON.stringify(db_usuarios));
     document.getElementById('formRegister').reset();
     renderizarUsuarios();
     alert('Usuario creado con éxito.');
 });
 
-// RESTABLECER CONTRASEÑAS DE USUARIOS
-function restablecerClave(username) {
+// RESTABLECER CONTRASEÑAS DE USUARIOS (Encripta la nueva contraseña)
+async function restablecerClave(username) {
     const nuevaClave = prompt(`Ingrese la nueva contraseña para el usuario ${username}:`);
     if(!nuevaClave) return;
+
+    // Encriptamos la clave en formato SHA-256
+    const hashNuevaClave = await generarSHA256(nuevaClave);
+
     db_usuarios = db_usuarios.map(x => {
-        if(x.user === username) x.pass = nuevaClave;
+        if(x.user === username) x.pass = hashNuevaClave;
         return x;
     });
     localStorage.setItem('ugel_users', JSON.stringify(db_usuarios));
